@@ -1,3 +1,8 @@
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://kolocuz.github.io'
+];
+
 exports.handler = async (event) => {
   const origin = event.headers.origin || '';
   const allowOrigin = allowedOrigins.includes(origin) ? origin : 'null';
