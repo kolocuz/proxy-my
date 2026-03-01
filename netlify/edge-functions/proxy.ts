@@ -1,32 +1,93 @@
-import type { Context, Config } from "@netlify/edge-functions";
+exports.handler = async (event) => {
+  // Обработка preflight запросов (OPTIONS)
+  if (event.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+        'Access-Control-Max-Age': '86400'
+      },
+      body: ''
+    };
+  }
 
-export default async (request: Request, context: Context) => {
-  const url = new URL(request.url);
-  const targetUrl = url.searchParams.get('url');
+  const targetUrl = event.queryStringParameters.url;
   
   if (!targetUrl) {
-    return new Response('Missing url parameter', { status: 400 });
+    return {
+      statusCode: 400,
+      headers: {
+        'Access-Control-Allow-Origin': '*'
+      },
+      body: 'Missing url parameter'
+    };
   }
 
   try {
-    const response = await fetch(targetUrl, {
-      method: request.method,
-      headers: request.headers,
-      body: request.body
+    // Формируем заголовки для целевого запроса
+    const headers = {};
+    
+    // Сохраняем Authorization если есть
+    if (event.headers.authorization || event.headers.Authorization) {
+      headers['Authorization'] = event.headers.authorization || event.headers.Authorization;
+    }
+    
+    // Сохраняем другие важные заголовки
+    const preserveHeaders = [
+      'content-type', 'accept', 'user-agent',
+      'if-none-match', 'if-modified-since'
+    ];
+    
+    preserveHeaders.forEach(header => {
+      const value = event.headers[header] || event.headers[header.toLowerCase()];
+      if (value) {
+        headers[header] = value;
+      }
     });
 
-    // Создаём новый ответ с CORS-заголовками
-    const newResponse = new Response(response.body, response);
-    newResponse.headers.set('Access-Control-Allow-Origin', '*');
-    newResponse.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    newResponse.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    
-    return newResponse;
-  } catch (error) {
-    return new Response('Proxy error: ' + error.message, { status: 500 });
-  }
-};
+    // Делаем запрос к целевому URL
+    const response = await fetch(targetUrl, {
+      method: event.httpMethod,
+      headers: headers,
+      body: event.body || undefined
+    });
 
-export const config: Config = {
-  path: "/proxy"
+    // Читаем тело ответа
+    let body;
+    const contentType = response.headers.get('content-type') || '';
+    
+    if (contentType.includes('application/json')) {
+      body = await response.json();
+      body = JSON.stringify(body);
+    } else {
+      body = await response.text();
+    }
+
+    // Формируем успешный ответ
+    return {
+      statusCode: response.status,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Expose-Headers': '*',
+        'Content-Type': contentType || 'application/json'
+      },
+      body: body
+    };
+    
+  } catch (error) {
+    console.error('Proxy error:', error);
+    
+    return {
+      statusCode: 500,
+      headers: {
+        'Access-Control-Allow-Origin': '*'
+      },
+      body: JSON.stringify({
+        error: 'Proxy error',
+        message: error.message
+      })
+    };
+  }
 };
