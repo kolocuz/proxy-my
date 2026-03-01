@@ -1,7 +1,6 @@
 [build]
-  command = "echo 'No build required'"
-  publish = "."
+  edge_functions = "netlify/edge-functions"
 
-[functions]
-  directory = "netlify/functions"
-  node_bundler = "esbuild"
+[[edge_functions]]
+  function = "proxy"
+  path = "/proxy"
