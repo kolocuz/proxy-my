@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yandex Proxy API</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a2f3f;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            text-align: center;
+            background: #2c4050;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+        }
+        h1 {
+            color: #2a6c9e;
+            margin-bottom: 20px;
+        }
+        .api-url {
+            background: #1a2f3f;
+            padding: 12px;
+            border-radius: 40px;
+            font-family: monospace;
+            margin: 20px 0;
+            word-break: break-all;
+        }
+        .status {
+            color: #4caf50;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        .note {
+            color: #c0d0e0;
+            font-size: 0.9rem;
+            margin-top: 30px;
+        }
+        .docs {
+            text-align: left;
+            background: #1a2f3f;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+        code {
+            background: #2c4050;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔄 Yandex Proxy API</h1>
+        
+        <div class="status">✅ API работает</div>
+        
+        <p>Это API-сервис для загрузки файлов в Vercel Blob, используемый чатом на GitHub Pages.</p>
+        
+        <div class="api-url">
+            🔗 API endpoint: <code>/api/generate-upload-url</code>
+        </div>
+
+        <div class="docs">
+            <h3>📘 Использование:</h3>
+            <p><strong>GET</strong> запрос с параметрами:</p>
+            <ul>
+                <li><code>filename</code> — имя файла</li>
+                <li><code>filetype</code> — MIME-тип файла</li>
+            </ul>
+            <p>Пример:</p>
+            <code>https://yandex-proxy-murex.vercel.app/api/generate-upload-url?filename=image.jpg&filetype=image/jpeg</code>
+        </div>
+
+        <div class="note">
+            ⚡ Этот сервис предназначен только для API-запросов.<br>
+            Основной чат доступен на <a href="https://kolocuz.github.io" style="color: #2a6c9e;">kolocuz.github.io</a>
+        </div>
+    </div>
+</body>
+</html>
