@@ -1,7 +1,7 @@
 import { put } from '@vercel/blob';
 
 export default async function handler(request, response) {
-  // CORS для вашего GitHub Pages сайта
+  // CORS
   response.setHeader('Access-Control-Allow-Origin', 'https://kolocuz.github.io');
   response.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   response.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -15,41 +15,38 @@ export default async function handler(request, response) {
     return response.status(400).json({ error: 'Missing seed parameter' });
   }
 
-  // Очищаем seed для безопасного имени файла
   const safeSeed = seed.replace(/[^a-zA-Z0-9]/g, '_');
   const BLOB_PATH = `chats/${safeSeed}.json`;
-  
-  // ВАШ РЕАЛЬНЫЙ ПУБЛИЧНЫЙ URL (без слеша в конце)
   const BLOB_PUBLIC_URL = 'https://lfgf4utzuaubrsto.public.blob.vercel-storage.com';
 
   try {
-    // ========== ПОЛУЧИТЬ СООБЩЕНИЯ ==========
+    // ========== GET - ПОЛУЧИТЬ СООБЩЕНИЯ ==========
     if (request.method === 'GET') {
       try {
         const blobUrl = `${BLOB_PUBLIC_URL}/${BLOB_PATH}`;
-        console.log('Fetching from:', blobUrl); // для отладки
-        
         const res = await fetch(blobUrl);
-        
         if (res.ok) {
-          const messages = await res.json();
-          return response.status(200).json(messages);
-        } else {
-          // Файл не найден (новая комната)
-          return response.status(200).json([]);
+          return response.status(200).json(await res.json());
         }
+        return response.status(200).json([]);
       } catch (error) {
         console.log('Error reading blob:', error.message);
-        // Возвращаем пустой массив при любой ошибке чтения
         return response.status(200).json([]);
       }
     }
 
-    // ========== ДОБАВИТЬ СООБЩЕНИЕ ==========
+    // ========== POST - ДОБАВИТЬ СООБЩЕНИЕ ==========
     if (request.method === 'POST') {
+      // 👇 ВАШ ФОРМАТ: { message: {...} }
       const { message } = request.body;
+      
+      console.log('Получено сообщение:', message); // Для отладки
+      
       if (!message) {
-        return response.status(400).json({ error: 'Missing message' });
+        return response.status(400).json({ 
+          error: 'Missing message object',
+          receivedBody: request.body 
+        });
       }
 
       // Загружаем существующие сообщения
@@ -67,21 +64,21 @@ export default async function handler(request, response) {
       // Добавляем новое сообщение
       messages.push(message);
 
-      // Ограничиваем историю (последние 1000 сообщений)
+      // Ограничиваем историю
       if (messages.length > 1000) {
         messages = messages.slice(-1000);
       }
 
-      // Сохраняем через SDK Vercel Blob
+      // Сохраняем в Blob
       const { url } = await put(BLOB_PATH, JSON.stringify(messages), {
         access: 'public',
         contentType: 'application/json',
-        addRandomSuffix: false, // Важно: не добавляем суффикс!
+        addRandomSuffix: false,
       });
 
+      console.log(`Сохранено ${messages.length} сообщений`);
       return response.status(200).json({ 
         success: true, 
-        url: url,
         messageCount: messages.length 
       });
     }
@@ -92,7 +89,8 @@ export default async function handler(request, response) {
     console.error('Fatal error:', error);
     return response.status(500).json({ 
       error: 'Internal server error',
-      details: error.message 
+      details: error.message,
+      stack: error.stack 
     });
   }
 }
