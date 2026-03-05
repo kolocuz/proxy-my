@@ -1,15 +1,13 @@
 export default async function handler(request, response) {
-  // Настраиваем CORS для вашего GitHub Pages сайта
+  // CORS для вашего GitHub Pages сайта
   response.setHeader('Access-Control-Allow-Origin', 'https://kolocuz.github.io');
   response.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   response.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   
-  // Обработка preflight запросов
   if (request.method === 'OPTIONS') {
     return response.status(200).end();
   }
   
-  // Только GET запросы
   if (request.method !== 'GET') {
     return response.status(405).json({ error: 'Method not allowed' });
   }
@@ -21,10 +19,8 @@ export default async function handler(request, response) {
       return response.status(400).json({ error: 'Missing filename or filetype' });
     }
     
-    // Импортируем Vercel Blob (добавим позже)
     const { put } = await import('@vercel/blob');
     
-    // Генерируем URL для прямой загрузки
     const blob = await put(filename, null, {
       access: 'public',
       contentType: filetype,
