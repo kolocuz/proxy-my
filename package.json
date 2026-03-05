@@ -1,11 +1,9 @@
 {
-  "name": "yandex-proxy-main",
+  "name": "vercel-chat-api",
   "version": "1.0.0",
   "type": "module",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "dependencies": {
-    "@vercel/blob": "^1.1.1"
+    "@vercel/blob": "^1.1.1",
+    "@vercel/kv": "^1.0.1"
   }
 }
