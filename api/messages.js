@@ -1,7 +1,6 @@
 import { kv } from '@vercel/kv';
 
 export default async function handler(request, response) {
-  // CORS для вашего GitHub Pages сайта
   response.setHeader('Access-Control-Allow-Origin', 'https://kolocuz.github.io');
   response.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   response.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -10,42 +9,34 @@ export default async function handler(request, response) {
     return response.status(200).end();
   }
 
-  const { seed } = request.query; // seed = ID чата (как раньше)
+  const { seed } = request.query;
 
   if (!seed) {
     return response.status(400).json({ error: 'Missing seed parameter' });
   }
 
-  const key = `chat:${seed}`; // ключ в KV для этого чата
+  const key = `chat:${seed}`;
 
   try {
     if (request.method === 'GET') {
-      // Получить все сообщения чата
       const messages = await kv.get(key) || [];
       return response.status(200).json(messages);
     }
 
     if (request.method === 'POST') {
-      // Добавить новое сообщение
       const { message } = request.body;
       if (!message) {
         return response.status(400).json({ error: 'Missing message' });
       }
 
-      // Текущие сообщения
       const messages = await kv.get(key) || [];
-      
-      // Добавляем новое (в конец)
       messages.push(message);
       
-      // Ограничим количество сообщений (например, последние 1000)
       if (messages.length > 1000) {
         messages.shift();
       }
 
-      // Сохраняем
       await kv.set(key, messages);
-
       return response.status(200).json({ success: true });
     }
 
