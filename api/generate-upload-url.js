@@ -20,11 +20,14 @@ export default async function handler(request, response) {
       return response.status(400).json({ error: 'Missing filename or filetype' });
     }
     
-    // Для файлов добавляем суффикс, чтобы избежать коллизий
+    // ✅ ТОКЕН ЯВНО УКАЗАН
+    const BLOB_TOKEN = 'vercel_blob_rw_LfGF4UTZuaUbRsTo_zbwq4kqa8LtFGMViQ5mROHs4tTqhCu';
+    
     const blob = await put(filename, null, {
       access: 'public',
       contentType: filetype,
       addRandomSuffix: true,
+      token: BLOB_TOKEN // 👈 ЯВНО ПЕРЕДАЁМ ТОКЕН
     });
     
     response.status(200).json({
