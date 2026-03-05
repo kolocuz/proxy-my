@@ -1,3 +1,5 @@
+import { put } from '@vercel/blob';
+
 export default async function handler(request, response) {
   // CORS для вашего GitHub Pages сайта
   response.setHeader('Access-Control-Allow-Origin', 'https://kolocuz.github.io');
@@ -19,12 +21,10 @@ export default async function handler(request, response) {
       return response.status(400).json({ error: 'Missing filename or filetype' });
     }
     
-    const { put } = await import('@vercel/blob');
-    
     const blob = await put(filename, null, {
       access: 'public',
       contentType: filetype,
-      addRandomSuffix: true,
+      addRandomSuffix: true, // Для файлов оставляем суффикс (чтобы избежать коллизий)
     });
     
     response.status(200).json({
